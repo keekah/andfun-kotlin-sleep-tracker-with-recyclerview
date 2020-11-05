@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.database.SleepDatabase
 import com.example.android.trackmysleepquality.databinding.FragmentSleepTrackerBinding
@@ -35,6 +36,10 @@ import com.google.android.material.snackbar.Snackbar
  * a database. Cumulative data is displayed in a simple scrollable TextView.
  * (Because we have not learned about RecyclerView yet.)
  */
+
+private const val SPAN_COUNT = 3
+
+
 class SleepTrackerFragment : Fragment() {
 
     /**
@@ -60,10 +65,13 @@ class SleepTrackerFragment : Fragment() {
         // Adapter initialization
         val adapter = SleepNightAdapter()
 
+        val layoutManager = GridLayoutManager(activity, SPAN_COUNT)
+
 
         binding.lifecycleOwner = this
         binding.sleepTrackerViewModel = sleepTrackerViewModel
         binding.sleepList.adapter = adapter
+        binding.sleepList.layoutManager = layoutManager
 
 
         sleepTrackerViewModel.nights.observe(viewLifecycleOwner, Observer {
