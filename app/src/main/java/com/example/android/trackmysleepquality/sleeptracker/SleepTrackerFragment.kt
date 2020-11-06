@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -29,7 +28,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.database.SleepDatabase
-import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.databinding.FragmentSleepTrackerBinding
 import com.google.android.material.snackbar.Snackbar
 
@@ -40,7 +38,6 @@ import com.google.android.material.snackbar.Snackbar
  */
 
 private const val SPAN_COUNT = 3
-
 
 class SleepTrackerFragment : Fragment() {
 
@@ -69,22 +66,43 @@ class SleepTrackerFragment : Fragment() {
             nightId -> sleepTrackerViewModel.onSleepNightClicked(nightId)
         })
 
+        val layoutManager = initGridLayoutManager()
+
+        initializeBindingObject(binding, sleepTrackerViewModel, adapter, layoutManager)
+        setObservers(sleepTrackerViewModel, adapter)
+
+        return binding.root
+    }
+
+
+    private fun initGridLayoutManager(): GridLayoutManager {
+
         val layoutManager = GridLayoutManager(activity, SPAN_COUNT)
-        layoutManager.spanSizeLookup = object: GridLayoutManager.SpanSizeLookup() {
+
+        layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int) = when (position) {
                 0 -> SPAN_COUNT
                 else -> 1
             }
         }
 
+        return layoutManager
+    }
 
+
+    private fun initializeBindingObject(binding: FragmentSleepTrackerBinding,
+                                        sleepTrackerViewModel: SleepTrackerViewModel,
+                                        adapter: SleepNightAdapter,
+                                        layoutManager: GridLayoutManager) {
         binding.lifecycleOwner = this
         binding.sleepTrackerViewModel = sleepTrackerViewModel
         binding.sleepList.adapter = adapter
         binding.sleepList.layoutManager = layoutManager
+    }
 
+    private fun setObservers(viewModel: SleepTrackerViewModel, adapter: SleepNightAdapter) {
 
-        sleepTrackerViewModel.nights.observe(viewLifecycleOwner, Observer {
+        viewModel.nights.observe(viewLifecycleOwner, Observer {
             it?.let {
                 adapter.addHeaderAndSubmitList(it)
             }
@@ -92,7 +110,7 @@ class SleepTrackerFragment : Fragment() {
 
         // Add an Observer on the state variable for showing a Snackbar message
         // when the CLEAR button is pressed.
-        sleepTrackerViewModel.showSnackBarEvent.observe(viewLifecycleOwner, Observer {
+        viewModel.showSnackBarEvent.observe(viewLifecycleOwner, Observer {
             if (it == true) { // Observed state is true.
                 Snackbar.make(
                         requireActivity().findViewById(android.R.id.content),
@@ -101,12 +119,12 @@ class SleepTrackerFragment : Fragment() {
                 ).show()
                 // Reset state to make sure the snackbar is only shown once, even if the device
                 // has a configuration change.
-                sleepTrackerViewModel.doneShowingSnackbar()
+                viewModel.doneShowingSnackbar()
             }
         })
 
         // Add an Observer on the state variable for Navigating when STOP button is pressed.
-        sleepTrackerViewModel.navigateToSleepQuality.observe(viewLifecycleOwner, Observer { night ->
+        viewModel.navigateToSleepQuality.observe(viewLifecycleOwner, Observer { night ->
             night?.let {
                 // We need to get the navController from this, because button is not ready, and it
                 // just has to be a view. For some reason, this only matters if we hit stop again
@@ -120,20 +138,18 @@ class SleepTrackerFragment : Fragment() {
                                 .actionSleepTrackerFragmentToSleepQualityFragment(night.nightId))
                 // Reset state to make sure we only navigate once, even if the device
                 // has a configuration change.
-                sleepTrackerViewModel.doneNavigating()
+                viewModel.doneNavigatingToSleepQuality()
             }
         })
 
-        sleepTrackerViewModel.navigateToSleepDataQuality.observe(viewLifecycleOwner, Observer { nightId ->
+        viewModel.navigateToSleepDataQuality.observe(viewLifecycleOwner, Observer { nightId ->
             nightId?.let {
                 this.findNavController().navigate(
                         SleepTrackerFragmentDirections
                                 .actionSleepTrackerFragmentToSleepDetailFragment(nightId))
 
-                sleepTrackerViewModel.onSleepDataQualityNavigated()
+                viewModel.doneNavigatingToSleepDataQuality()
             }
         })
-
-        return binding.root
     }
 }

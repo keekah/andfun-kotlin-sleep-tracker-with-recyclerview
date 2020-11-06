@@ -22,7 +22,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
 import com.example.android.trackmysleepquality.database.SleepNight
-import kotlinx.coroutines.Job
 
 /**
  * ViewModel for SleepQualityFragment.
@@ -38,17 +37,7 @@ class SleepDetailViewModel(
      */
     val database = dataSource
 
-
-    /**
-     */
-
     private val night = MediatorLiveData<SleepNight>()
-
-    fun getNight() = night
-
-    init {
-        night.addSource(database.getNightWithId(sleepNightKey), night::setValue)
-    }
 
     /**
      * Variable that tells the fragment whether it should navigate to [SleepTrackerFragment].
@@ -57,29 +46,30 @@ class SleepDetailViewModel(
      * the [Fragment]
      */
     private val _navigateToSleepTracker = MutableLiveData<Boolean?>()
-
     /**
      * When true immediately navigate back to the [SleepTrackerFragment]
      */
     val navigateToSleepTracker: LiveData<Boolean?>
         get() = _navigateToSleepTracker
 
-    /**
-     *
-     */
 
+    init {
+        night.addSource(database.getNightWithId(sleepNightKey), night::setValue)
+    }
+
+
+    fun getNight() = night
 
     /**
      * Call this immediately after navigating to [SleepTrackerFragment]
      */
-    fun doneNavigating() {
+    fun doneNavigatingToSleepTracker() {
         _navigateToSleepTracker.value = null
     }
 
     fun onClose() {
         _navigateToSleepTracker.value = true
     }
-
 }
 
  

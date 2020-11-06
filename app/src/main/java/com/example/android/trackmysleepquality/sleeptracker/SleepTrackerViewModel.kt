@@ -38,7 +38,6 @@ class SleepTrackerViewModel(
      * viewModelJob allows us to cancel all coroutines started by this ViewModel.
 
     private var viewModelJob = Job()
-
     /**
      * A [CoroutineScope] keeps track of all coroutines started by this ViewModel.
      *
@@ -51,7 +50,6 @@ class SleepTrackerViewModel(
      */
     private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
      */
-
 
     private var tonight = MutableLiveData<SleepNight?>()
 
@@ -91,7 +89,6 @@ class SleepTrackerViewModel(
      * This is private because we don't want to expose setting this value to the Fragment.
      */
     private var _showSnackbarEvent = MutableLiveData<Boolean>()
-
     /**
      * If this is true, immediately `show()` a toast and call `doneShowingSnackbar()`.
      */
@@ -103,50 +100,22 @@ class SleepTrackerViewModel(
      *
      * This is private because we don't want to expose setting this value to the Fragment.
      */
-
     private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
     /**
-     * Call this immediately after calling `show()` on a toast.
-     *
-     * It will clear the toast request, so if the user rotates their phone it won't show a duplicate
-     * toast.
-     */
-
-    fun doneShowingSnackbar() {
-        _showSnackbarEvent.value = false
-    }
-
-    /**
-     * If this is non-null, immediately navigate to [SleepQualityFragment] and call [doneNavigating]
+     * If this is non-null, immediately navigate to [SleepQualityFragment] and call [doneNavigatingToSleepQuality]
      */
     val navigateToSleepQuality: LiveData<SleepNight>
         get() = _navigateToSleepQuality
 
-    /**
-     * Call this immediately after navigating to [SleepQualityFragment]
-     *
-     * It will clear the navigation request, so if the user rotates their phone it won't navigate
-     * twice.
-     */
-    fun doneNavigating() {
-        _navigateToSleepQuality.value = null
-    }
-
     private val _navigateToSleepDataQuality = MutableLiveData<Long>()
-    val navigateToSleepDataQuality
+    val navigateToSleepDataQuality: MutableLiveData<Long>
         get() = _navigateToSleepDataQuality
 
-    fun onSleepNightClicked(id: Long) {
-        _navigateToSleepDataQuality.value = id
-    }
-
-    fun onSleepDataQualityNavigated() {
-        _navigateToSleepDataQuality.value = null
-    }
 
     init {
         initializeTonight()
     }
+
 
     private fun initializeTonight() {
         viewModelScope.launch {
@@ -155,38 +124,31 @@ class SleepTrackerViewModel(
     }
 
     /**
-     *  Handling the case of the stopped app or forgotten recording,
-     *  the start and end times will be the same.j
+     * Call this immediately after calling `show()` on a toast.
      *
-     *  If the start time and end time are not the same, then we do not have an unfinished
-     *  recording.
+     * It will clear the toast request, so if the user rotates their phone it won't show a duplicate
+     * toast.
      */
-    private suspend fun getTonightFromDatabase(): SleepNight? {
-        //return withContext(Dispatchers.IO) {
-            var night = database.getTonight()
-            if (night?.endTimeMilli != night?.startTimeMilli) {
-                night = null
-            }
-            return night
-        //}
+    fun doneShowingSnackbar() {
+        _showSnackbarEvent.value = false
     }
 
-    private suspend fun clear() {
-        withContext(Dispatchers.IO) {
-            database.clear()
-        }
+    /**
+     * Call this immediately after navigating to [SleepQualityFragment]
+     *
+     * It will clear the navigation request, so if the user rotates their phone it won't navigate
+     * twice.
+     */
+    fun doneNavigatingToSleepQuality() {
+        _navigateToSleepQuality.value = null
     }
 
-    private suspend fun update(night: SleepNight) {
-        withContext(Dispatchers.IO) {
-            database.update(night)
-        }
+    fun doneNavigatingToSleepDataQuality() {
+        _navigateToSleepDataQuality.value = null
     }
 
-    private suspend fun insert(night: SleepNight) {
-        withContext(Dispatchers.IO) {
-            database.insert(night)
-        }
+    fun onSleepNightClicked(id: Long) {
+        _navigateToSleepDataQuality.value = id
     }
 
     /**
@@ -239,6 +201,41 @@ class SleepTrackerViewModel(
 
         // Show a snackbar message, because it's friendly.
         _showSnackbarEvent.value = true
+    }
+
+    /**
+     *  Handling the case of the stopped app or forgotten recording,
+     *  the start and end times will be the same.j
+     *
+     *  If the start time and end time are not the same, then we do not have an unfinished
+     *  recording.
+     */
+    private suspend fun getTonightFromDatabase(): SleepNight? {
+        //return withContext(Dispatchers.IO) {
+        var night = database.getTonight()
+        if (night?.endTimeMilli != night?.startTimeMilli) {
+            night = null
+        }
+        return night
+        //}
+    }
+
+    private suspend fun clear() {
+        withContext(Dispatchers.IO) {
+            database.clear()
+        }
+    }
+
+    private suspend fun update(night: SleepNight) {
+        withContext(Dispatchers.IO) {
+            database.update(night)
+        }
+    }
+
+    private suspend fun insert(night: SleepNight) {
+        withContext(Dispatchers.IO) {
+            database.insert(night)
+        }
     }
 
     /**

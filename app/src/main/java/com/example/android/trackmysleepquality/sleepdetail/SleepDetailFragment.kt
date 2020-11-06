@@ -48,24 +48,31 @@ class SleepDetailFragment : Fragment() {
         val binding: FragmentSleepDetailBinding = DataBindingUtil.inflate(
                 inflater, R.layout.fragment_sleep_detail, container, false)
 
-        val application = requireNotNull(this.activity).application
+        // Factory and ViewModel initialization
         val arguments = SleepDetailFragmentArgs.fromBundle(arguments!!)
-
-        // Create an instance of the ViewModel Factory.
+        val application = requireNotNull(this.activity).application
         val dataSource = SleepDatabase.getInstance(application).sleepDatabaseDao
         val viewModelFactory = SleepDetailViewModelFactory(arguments.sleepNightKey, dataSource)
-
-        // Get a reference to the ViewModel associated with this fragment.
         val sleepDetailViewModel =
                 ViewModelProvider(
                         this, viewModelFactory).get(SleepDetailViewModel::class.java)
 
+
+        initializeBindingObject(binding, sleepDetailViewModel)
+        setObservers(sleepDetailViewModel)
+
+        return binding.root
+    }
+
+    private fun initializeBindingObject(binding: FragmentSleepDetailBinding,
+                                        sleepDetailViewModel: SleepDetailViewModel) {
         // To use the View Model with data binding, you have to explicitly
         // give the binding object a reference to it.
         binding.sleepDetailViewModel = sleepDetailViewModel
-
         binding.lifecycleOwner = this
+    }
 
+    private fun setObservers(sleepDetailViewModel: SleepDetailViewModel) {
         // Add an Observer to the state variable for Navigating when a Quality icon is tapped.
         sleepDetailViewModel.navigateToSleepTracker.observe(viewLifecycleOwner, Observer {
             if (it == true) { // Observed state is true.
@@ -73,10 +80,8 @@ class SleepDetailFragment : Fragment() {
                         SleepDetailFragmentDirections.actionSleepDetailFragmentToSleepTrackerFragment())
                 // Reset state to make sure we only navigate once, even if the device
                 // has a configuration change.
-                sleepDetailViewModel.doneNavigating()
+                sleepDetailViewModel.doneNavigatingToSleepTracker()
             }
         })
-
-        return binding.root
     }
 }

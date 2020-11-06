@@ -23,8 +23,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.android.trackmysleepquality.R
-import com.example.android.trackmysleepquality.convertDurationToFormatted
-import com.example.android.trackmysleepquality.convertNumericQualityToString
 import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.databinding.ListItemSleepNightBinding
 import kotlinx.coroutines.CoroutineScope
@@ -44,7 +42,7 @@ class SleepNightAdapter (val clickListener: SleepNightListener): ListAdapter<Dat
         return when (viewType) {
             ITEM_VIEW_TYPE_HEADER -> TextViewHolder.from(parent)
             ITEM_VIEW_TYPE_ITEM -> ViewHolder.from(parent)
-            else -> throw ClassCastException("Unknown viewType ${viewType}")
+            else -> throw ClassCastException("Unknown viewType $viewType")
         }
     }
 
@@ -94,7 +92,9 @@ class SleepNightAdapter (val clickListener: SleepNightListener): ListAdapter<Dat
         }
     }
 
+
     class TextViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+
         companion object{
             fun from(parent: ViewGroup): TextViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
@@ -104,6 +104,7 @@ class SleepNightAdapter (val clickListener: SleepNightListener): ListAdapter<Dat
         }
     }
 }
+
 
 class SleepNightDiffCallback : DiffUtil.ItemCallback<DataItem>() {
 
@@ -116,9 +117,12 @@ class SleepNightDiffCallback : DiffUtil.ItemCallback<DataItem>() {
     }
 }
 
+
 class SleepNightListener (val clickListener: (sleepId: Long) -> Unit) {
+
     fun onClick(night: SleepNight) = clickListener(night.nightId)
 }
+
 
 sealed class DataItem {
 

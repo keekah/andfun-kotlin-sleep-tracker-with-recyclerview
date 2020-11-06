@@ -32,21 +32,10 @@ class SleepQualityViewModel(
         private val sleepNightKey: Long = 0L,
         val database: SleepDatabaseDao) : ViewModel() {
 
-
     /**
      * viewModelJob allows us to cancel all coroutines started by this ViewModel.
      */
     private val viewModelJob = Job()
-
-    /**
-     * A [CoroutineScope] keeps track of all coroutines started by this ViewModel.
-     *
-     * Because we pass it [viewModelJob], any coroutine started in this scope can be cancelled
-     * by calling `viewModelJob.cancel()`
-     *
-     * By default, all coroutines started in uiScope will launch in [Dispatchers.Main] which is
-     * the main thread on Android. This is a sensible default because most coroutines started by
-     */
 
     /**
      * Variable that tells the fragment whether it should navigate to [SleepTrackerFragment].
@@ -55,16 +44,12 @@ class SleepQualityViewModel(
      * the [Fragment]
      */
     private val _navigateToSleepTracker = MutableLiveData<Boolean?>()
-
     /**
      * When true immediately navigate back to the [SleepTrackerFragment]
      */
     val navigateToSleepTracker: LiveData<Boolean?>
         get() = _navigateToSleepTracker
 
-    /**
-     *
-     */
 
     /**
      * Call this immediately after navigating to [SleepTrackerFragment]
@@ -91,4 +76,3 @@ class SleepQualityViewModel(
         }
     }
 }
-

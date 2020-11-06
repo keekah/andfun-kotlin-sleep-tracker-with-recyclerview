@@ -49,23 +49,30 @@ class SleepQualityFragment : Fragment() {
         val binding: FragmentSleepQualityBinding = DataBindingUtil.inflate(
                 inflater, R.layout.fragment_sleep_quality, container, false)
 
-        val application = requireNotNull(this.activity).application
-
+        // Factory and ViewModel initialization
         val arguments = SleepQualityFragmentArgs.fromBundle(arguments!!)
-
-        // Create an instance of the ViewModel Factory.
+        val application = requireNotNull(this.activity).application
         val dataSource = SleepDatabase.getInstance(application).sleepDatabaseDao
         val viewModelFactory = SleepQualityViewModelFactory(arguments.sleepNightKey, dataSource)
-
-        // Get a reference to the ViewModel associated with this fragment.
         val sleepQualityViewModel =
                 ViewModelProvider(
                         this, viewModelFactory).get(SleepQualityViewModel::class.java)
 
+
+        initializeBindingObject(binding, sleepQualityViewModel)
+        setObservers(sleepQualityViewModel)
+
+        return binding.root
+    }
+
+    private fun initializeBindingObject(binding: FragmentSleepQualityBinding,
+                                        sleepQualityViewModel: SleepQualityViewModel) {
         // To use the View Model with data binding, you have to explicitly
         // give the binding object a reference to it.
         binding.sleepQualityViewModel = sleepQualityViewModel
+    }
 
+    private fun setObservers(sleepQualityViewModel: SleepQualityViewModel) {
         // Add an Observer to the state variable for Navigating when a Quality icon is tapped.
         sleepQualityViewModel.navigateToSleepTracker.observe(viewLifecycleOwner, Observer {
             if (it == true) { // Observed state is true.
@@ -76,7 +83,5 @@ class SleepQualityFragment : Fragment() {
                 sleepQualityViewModel.doneNavigating()
             }
         })
-
-        return binding.root
     }
 }
